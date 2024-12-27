@@ -1,0 +1,172 @@
+library(tidyverse)
+
+# 導入數據
+data_3113 <- readr::read_csv("data/3113.csv")
+
+# 查看數據框的結構和前幾行
+str(data_3113)
+head(data_3113)
+view(data_3113)
+# 讀取 CSV 文件
+data_3113 <- readr::read_csv("data/3113.csv")
+
+
+# 刪除 "銀行別" 欄位中包含 "總計" 的行
+new <- data_3113 |>
+  dplyr::filter(銀行別 != "總計")
+
+# 查看刪除後的數據
+head(new)
+view(new)
+
+# 篩選出 金融機構別 欄位中包含 "本國銀行(全行)" 的行
+filtered_data <- new |>
+  dplyr::filter(金融機構別 == "本國銀行(全行)")
+
+
+# 查看篩選後的結果
+view(filtered_data)
+
+
+# 根據 "契約-總計-百萬美元" 欄位從大到小排序
+sorted_filtered_data <- filtered_data |>
+  dplyr::arrange(dplyr::desc(`契約-總計-百萬美元`))
+
+# 查看排序後的數據
+view(sorted_filtered_data)
+print(sorted_filtered_data)
+
+
+
+# 計算 "契約-總計-百萬美元" 的平均值
+average_value <- sorted_filtered_data |>
+  dplyr::summarise(mean_value = mean(`契約-總計-百萬美元`, na.rm = TRUE)) |>
+  dplyr::pull(mean_value)
+
+# 查看平均值
+average_value
+
+
+# 加載 ggplot2 (已隸屬於 tidyverse)
+library(ggplot2)
+
+# 繪製圖表
+ggplot(filtered_data, aes(x = `銀行別`, y = `契約-總計-百萬美元`)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "各銀行契約總計（百萬美元）",
+    x = "銀行別",
+    y = "契約-總計-百萬美元"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 按 "契約-總計-百萬美元" 從大到小排序並篩選前十
+top_10 <- sorted_filtered_data |>
+  dplyr::arrange(dplyr::desc(`契約-總計-百萬美元`)) |>
+  dplyr::slice_head(n = 10)
+
+# 查看篩選結果
+top_10
+# 將篩選出的前十筆資料儲存為 CSV
+readr::write_csv(top_10, "12345.csv")
+
+
+# 繪製圓餅圖
+ggplot(top_10, aes(x = "", y = `契約-總計-百萬美元`, fill = 銀行別)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(
+    title = "前十筆銀行契約總計（百萬美元）",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_void() +
+  theme(legend.title = element_blank())
+
+
+# 繪製圓餅圖
+ggplot(top_10, aes(x = "", y = `契約-總計-百萬美元`, fill = 銀行別)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(
+    title = "前十筆銀行契約總計（百萬美元）",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_void() +
+  theme(legend.title = element_blank())
+
+
+# 篩選出 "契約-總計-百萬美元" 欄位最大值的前十筆資料
+top_10_filtered <- filtered_data |>
+  dplyr::arrange(dplyr::desc(`契約-總計-百萬美元`)) |>
+  dplyr::slice_head(n = 10)
+
+# 繪製圓餅圖
+ggplot(top_10_filtered, aes(x = "", y = `契約-總計-百萬美元`, fill = 銀行別)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(
+    title = "前十筆銀行契約總計（百萬美元）",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_void() +
+  theme(legend.title = element_blank())
+
+
+# 篩選出 "契約-總計-百萬美元" 欄位最大值的前十筆資料
+top_10_filtered <- filtered_data |>
+  dplyr::arrange(dplyr::desc(`契約-總計-百萬美元`)) |>
+  dplyr::slice_head(n = 10)
+
+# 繪製柱狀圖
+ggplot(top_10_filtered, aes(x = 銀行別, y = `契約-總計-百萬美元`, fill = 銀行別)) +
+  geom_col() +
+  labs(
+    title = "前十筆銀行契約總計（百萬美元）",
+    x = "銀行別",
+    y = "契約-總計-百萬美元"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# 確保 "月-期底" 轉換為日期或數字格式，然後按照數字大小排序
+top_10_filtered <- top_10_filtered |>
+  mutate(月_期底 = as.numeric(月-期底)) |>
+  arrange(月_期底)
+
+# 繪製柱狀圖
+ggplot(top_10_filtered, aes(x = factor(月_期底), y = `契約-總計-百萬美元`)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "依月-期底排序的契約總計（百萬美元）",
+    x = "月-期底",
+    y = "契約總計（百萬美元）"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# 確保 "月-期底" 欄位名稱正確並將其轉換為數字格式
+top_10_filtered <- top_10_filtered |>
+  mutate(月期底 = as.numeric(`月-期底`)) |>
+  arrange(月期底)
+
+# 確保 "月-期底" 欄位名稱正確並將其轉換為數字格式
+top_10_filtered <- top_10_filtered |>
+  mutate(月期底 = as.numeric(`月-期底`)) |>
+  arrange(月期底)
+
+# 繪製柱狀圖
+ggplot(top_10_filtered, aes(x = factor(月期底), y = `契約-總計-百萬美元`)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "依月-期底排序的契約總計（百萬美元）",
+    x = "月-期底",
+    y = "契約總計（百萬美元）"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
